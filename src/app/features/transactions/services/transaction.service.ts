@@ -175,9 +175,12 @@ export class TransactionService {
     if (type === 'debit' && isToday) {
       const newTotal = this.todayDebitTotal() + amount;
       if (newTotal > BUSINESS_RULES.DAILY_DEBIT_LIMIT) {
-        errors.push({ 
-          code: 'DAILY_LIMIT_EXCEEDED', 
-          message: `Daily debit limit of ${BUSINESS_RULES.DAILY_DEBIT_LIMIT} EGP exceeded. Remaining: ${this.remainingDailyLimit()} EGP`,
+        const remaining = this.remainingDailyLimit();
+        errors.push({
+          code: 'DAILY_LIMIT_EXCEEDED',
+          message: remaining <= 0
+            ? `Daily debit limit of ${BUSINESS_RULES.DAILY_DEBIT_LIMIT.toLocaleString()} EGP exceeded. No remaining allowance today.`
+            : `Daily debit limit of ${BUSINESS_RULES.DAILY_DEBIT_LIMIT.toLocaleString()} EGP exceeded. Reduce amount; remaining today: ${remaining.toLocaleString()} EGP`,
           field: 'amount'
         });
       }

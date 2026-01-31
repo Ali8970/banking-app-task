@@ -132,13 +132,14 @@ readonly selectedCustomer = computed(() => {
 - Standalone components (no NgModules)
 - Lazy-loaded routes for all features
 - Path aliases (@core, @features, @shared)
+- Zoneless change detection (experimental) with signals
 
 ### Layer 1: Authentication & Security
 - **Fake JWT**: Client-side token generation with base64 encoding
-- **Secure Storage**: sessionStorage (cleared on tab close) with memory fallback
+- **Token storage**: sessionStorage only (cleared on tab close); no plain localStorage for tokens. In-memory fallback when storage is unavailable.
 - **Auth Guard**: Protects all routes except /auth/*
 - **Auto Logout**: 15-minute inactivity timer with event listeners
-- **Roles**: Admin, Teller, Viewer with different permissions
+- **Roles**: Admin, Teller, Viewer. Create Transaction is hidden for Viewer; /transactions/create is guarded so Viewer cannot open it by URL.
 
 ### Layer 2: Customers & Accounts
 - **Customer Persistence**: Selected customer ID stored in sessionStorage
@@ -158,10 +159,10 @@ readonly selectedCustomer = computed(() => {
   - Date validation (cannot be before account opening)
 
 ### Layer 4: Data & Performance
-- **One-Time Load**: JSON data loaded once at app init
+- **One-Time Load**: JSON data loaded once at app init and shared across features
+- **Cache invalidation**: Data is static; cache updates only on explicit user actions (add transaction, undo, process scheduled). No TTL.
 - **Virtual Scrolling**: CDK virtual scroll for transaction list
-- **Computed Signals**: Memoized derived state
-- **OnPush**: All components use OnPush change detection
+- **Computed Signals**: Memoized derived state; zoneless change detection
 
 ### Layer 5: Analytics
 - **Spending Trend**: Last 3 months aggregated by month
@@ -176,7 +177,7 @@ readonly selectedCustomer = computed(() => {
 - **Empty States**: Custom messages for each feature
 - **Disabled States**: Business rule-driven (frozen accounts, viewer role, limits)
 
-### Layer 7: All Four Features
+### Layer 7: Extended Features (spec required one; all four implemented)
 
 #### 1. Undo Last Transaction
 - **Implementation**: Command-style with last transaction stored in signal
@@ -244,7 +245,7 @@ undoLastTransaction() → removes last transaction → disables undo
 
 1. **Lazy Loading**: All feature routes are lazy-loaded
 2. **Virtual Scrolling**: Transaction list uses CDK virtual scroll (itemSize: 88px)
-3. **OnPush Detection**: All components use OnPush change detection
+3. **Zoneless + Signals**: Change detection uses zoneless mode; derived state via computed signals
 4. **Computed Signals**: Derived state is memoized and only recalculates when dependencies change
 5. **Track By**: All @for loops use track expressions for efficient DOM updates
 6. **One-Time Data Load**: Static data loaded once and cached in memory
@@ -271,9 +272,6 @@ undoLastTransaction() → removes last transaction → disables undo
 - **Framework**: Angular 21 (Standalone Components)
 - **Styling**: Tailwind CSS v4
 - **State**: Signals-based reactive state
+- **Forms**: Signal-based forms (@angular/forms/signals)
 - **Virtual Scroll**: Angular CDK
 - **Change Detection**: Zoneless (experimental)
-
-## License
-
-This project is created for technical assessment purposes.
