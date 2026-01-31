@@ -1,0 +1,83 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">Customers</h1>
+    <p class="page-subtitle">Select a customer to view their accounts and transactions</p>
+  </div>
+
+  <!-- Search -->
+  <div class="search-wrapper">
+    <div class="search-input-wrapper">
+      <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <input
+        type="search"
+        placeholder="Search customers..."
+        class="search-input"
+        [value]="searchQuery()"
+        (input)="onSearch($event)"
+        aria-label="Search customers"
+      />
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (dataLoader.isLoading()) {
+    <div class="grid-loading">
+      @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+        <app-card>
+          <div class="skeleton-content">
+            <app-skeleton height="1.25rem" width="70%" />
+            <app-skeleton height="1rem" width="90%" />
+            <app-skeleton height="1rem" width="60%" />
+          </div>
+        </app-card>
+      }
+    </div>
+  } @else if (filteredCustomers().length === 0) {
+    <!-- Empty State -->
+    <app-empty-state
+      icon="users"
+      [title]="searchQuery() ? 'No customers found' : 'No customers'"
+      [description]="searchQuery() ? 'Try adjusting your search terms' : 'There are no customers in the system'"
+    />
+  } @else {
+    <!-- Customer Grid -->
+    <div class="customer-grid">
+      @for (customer of filteredCustomers(); track customer.id) {
+        <button
+          type="button"
+          class="customer-card-btn"
+          (click)="selectCustomer(customer)"
+        >
+          <app-card [hoverable]="true">
+            <div class="customer-card-content">
+              <!-- Avatar -->
+              <div class="customer-avatar">
+                <span class="customer-initials">{{ getInitials(customer.name) }}</span>
+              </div>
+
+              <!-- Info -->
+              <div class="customer-info">
+                <div class="customer-name-row">
+                  <h3 class="customer-name">{{ customer.name }}</h3>
+                  @if (customerState.selectedCustomerId() === customer.id) {
+                    <span class="selected-badge">Selected</span>
+                  }
+                </div>
+                <p class="customer-email">{{ customer.email }}</p>
+                <p class="customer-phone">{{ customer.phone }}</p>
+              </div>
+
+              <!-- Arrow -->
+              <svg class="customer-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </app-card>
+        </button>
+      }
+    </div>
+  }
+</div>

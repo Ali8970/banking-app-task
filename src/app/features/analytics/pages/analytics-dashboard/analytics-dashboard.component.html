@@ -1,0 +1,148 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">Analytics</h1>
+    <p class="page-subtitle">
+      @if (customerState.hasSelectedCustomer()) {
+        Financial insights for {{ customerState.selectedCustomer()?.name }}
+      } @else {
+        Select a customer to view analytics
+      }
+    </p>
+  </div>
+
+  @if (!customerState.hasSelectedCustomer()) {
+    <app-empty-state
+      icon="chart"
+      title="No customer selected"
+      description="Please select a customer to view their financial analytics"
+    >
+      <app-button (clicked)="goToCustomers()">Select Customer</app-button>
+    </app-empty-state>
+  } @else if (dataLoader.isLoading()) {
+    <div class="loading-grid">
+      @for (i of [1, 2, 3]; track i) {
+        <app-card>
+          <app-skeleton height="1rem" width="40%" />
+          <app-skeleton height="2.5rem" width="60%" class="skeleton-mt" />
+        </app-card>
+      }
+    </div>
+  } @else {
+    @if (analytics.abnormalSpending().detected) {
+      <div class="alert-banner">
+        <div class="alert-icon-wrap">
+          <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="alert-title">Abnormal Spending Detected</h3>
+          <p class="alert-text">{{ analytics.abnormalSpending().message }}</p>
+          <p class="alert-hint">Threshold: {{ analytics.averageSpending() * 1.5 | currencyFormat }}</p>
+        </div>
+      </div>
+    }
+
+    <div class="summary-grid">
+      <app-card>
+        <div class="summary-item">
+          <p class="summary-label">Total Transactions</p>
+          <p class="summary-value">{{ analytics.analyticsData().totalTransactions }}</p>
+        </div>
+      </app-card>
+      <app-card>
+        <div class="summary-item">
+          <p class="summary-label">Avg Transaction Size</p>
+          <p class="summary-value summary-value-info">{{ analytics.averageTransactionSize() | currencyFormat }}</p>
+        </div>
+      </app-card>
+      <app-card>
+        <div class="summary-item">
+          <p class="summary-label">Total Credits</p>
+          <p class="summary-value summary-value-success">{{ analytics.totalCredits() | currencyFormat }}</p>
+        </div>
+      </app-card>
+      <app-card>
+        <div class="summary-item">
+          <p class="summary-label">Total Spending</p>
+          <p class="summary-value summary-value-danger">{{ analytics.totalSpending() | currencyFormat }}</p>
+        </div>
+      </app-card>
+    </div>
+
+    <div class="charts-grid">
+      <app-card title="Spending Trend" subtitle="Last 3 months">
+        @if (analytics.spendingTrend().length === 0) {
+          <p class="empty-chart">No spending data available</p>
+        } @else {
+          <div class="trend-list">
+            @for (month of analytics.spendingTrend(); track month.month + month.year) {
+              <div class="trend-item">
+                <div class="trend-header">
+                  <span class="trend-month">{{ month.month }} {{ month.year }}</span>
+                  <span class="trend-total">{{ month.total | currencyFormat }}</span>
+                </div>
+                <div class="trend-bar-bg">
+                  <div class="trend-bar" [style.width.%]="getBarWidth(month.total)"></div>
+                </div>
+                <p class="trend-count">{{ month.count }} transactions</p>
+              </div>
+            }
+          </div>
+          <div class="trend-footer">
+            <span class="trend-mom-label">Month-over-month:</span>
+            @if (analytics.monthOverMonthChange().direction === 'up') {
+              <app-badge variant="danger">{{ analytics.monthOverMonthChange().percentage }}%</app-badge>
+            } @else if (analytics.monthOverMonthChange().direction === 'down') {
+              <app-badge variant="success">{{ Math.abs(analytics.monthOverMonthChange().percentage) }}%</app-badge>
+            } @else {
+              <app-badge variant="default">No change</app-badge>
+            }
+          </div>
+        }
+      </app-card>
+
+      <app-card title="Spending by Category" subtitle="All time breakdown">
+        @if (analytics.spendingByCategory().length === 0) {
+          <p class="empty-chart">No spending data available</p>
+        } @else {
+          <div class="category-list">
+            @for (item of analytics.spendingByCategory(); track item.category) {
+              <div class="category-item">
+                <div class="category-icon" [class]="getCategoryColor(item.category)">
+                  <span class="category-letter">{{ item.category.charAt(0) }}</span>
+                </div>
+                <div class="category-details">
+                  <div class="category-row">
+                    <span class="category-name">{{ item.category }}</span>
+                    <span class="category-amount">{{ item.amount | currencyFormat }}</span>
+                  </div>
+                  <div class="category-bar-bg">
+                    <div class="category-bar" [class]="getCategoryBarColor(item.category)" [style.width.%]="getCategoryPercentage(item.amount)"></div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </app-card>
+    </div>
+
+    <app-card title="Quick Insights">
+      <div class="insights-grid">
+        <div class="insight-item">
+          <p class="insight-label">Average Daily Spending</p>
+          <p class="insight-value">{{ averageDailySpending() | currencyFormat }}</p>
+        </div>
+        <div class="insight-item">
+          <p class="insight-label">Largest Transaction</p>
+          <p class="insight-value">{{ largestTransaction() | currencyFormat }}</p>
+        </div>
+        <div class="insight-item">
+          <p class="insight-label">Top Spending Category</p>
+          <p class="insight-value insight-value-capitalize">{{ topCategory() || 'N/A' }}</p>
+        </div>
+      </div>
+    </app-card>
+  }
+</div>

@@ -1,0 +1,136 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="page-header">
+    <button type="button" class="back-link" (click)="goBack()">
+      <svg class="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Back to Transactions
+    </button>
+    <h1 class="page-title">Create Transaction</h1>
+    <p class="page-subtitle">Account: {{ customerState.selectedAccount()?.accountNumber }}</p>
+  </div>
+
+  @if (customerState.selectedAccount()?.status === 'frozen') {
+    <div class="warning-banner">
+      <p class="warning-text"><strong>Account Frozen:</strong> Only credit transactions are allowed on this account.</p>
+    </div>
+  }
+
+  <app-card>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <!-- Transaction Type -->
+      <div class="form-section">
+        <label class="form-label">Transaction Type</label>
+        <div class="type-grid">
+          <button
+            type="button"
+            class="type-btn"
+            [class.type-btn-active-credit]="form.get('type')?.value === 'credit'"
+            (click)="setType('credit')"
+          >
+            <div class="type-btn-inner">
+              <div class="type-icon type-icon-credit">
+                <svg class="type-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <div>
+                <p class="type-label">Credit</p>
+                <p class="type-desc">Money in</p>
+              </div>
+            </div>
+          </button>
+          <button
+            type="button"
+            class="type-btn"
+            [class.type-btn-active-debit]="form.get('type')?.value === 'debit'"
+            [disabled]="customerState.selectedAccount()?.status === 'frozen'"
+            (click)="setType('debit')"
+          >
+            <div class="type-btn-inner">
+              <div class="type-icon type-icon-debit">
+                <svg class="type-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                </svg>
+              </div>
+              <div>
+                <p class="type-label">Debit</p>
+                <p class="type-desc">Money out</p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Amount -->
+      <div class="form-field">
+        <label for="amount" class="form-label">Amount</label>
+        <div class="input-with-prefix">
+          <span class="input-prefix">{{ currencySymbol() }}</span>
+          <input id="amount" type="number" formControlName="amount" class="form-input" placeholder="0.00" min="0" step="0.01" />
+        </div>
+        @if (form.get('type')?.value === 'debit') {
+          <p class="form-hint">Daily limit remaining: {{ transactionService.remainingDailyLimit() | currencyFormat:customerState.selectedAccount()?.currency }}</p>
+        }
+        @if (form.get('amount')?.touched && form.get('amount')?.errors) {
+          <p class="form-error">{{ getFieldError('amount') }}</p>
+        }
+      </div>
+
+      <!-- Category -->
+      <div class="form-field">
+        <label for="category" class="form-label">Category</label>
+        <select id="category" formControlName="category" class="form-select">
+          <option value="">Select a category</option>
+          @for (cat of availableCategories(); track cat) {
+            <option [value]="cat">{{ cat | titlecase }}</option>
+          }
+        </select>
+        @if (form.get('category')?.touched && form.get('category')?.errors) {
+          <p class="form-error">{{ getFieldError('category') }}</p>
+        }
+      </div>
+
+      <!-- Date -->
+      <div class="form-field">
+        <label for="date" class="form-label">Date</label>
+        <input id="date" type="date" formControlName="date" class="form-input" [min]="minDate" />
+        @if (isScheduled()) {
+          <p class="form-hint form-hint-warning">This transaction will be scheduled for {{ form.get('date')?.value }}</p>
+        }
+        @if (form.get('date')?.touched && form.get('date')?.errors) {
+          <p class="form-error">{{ getFieldError('date') }}</p>
+        }
+      </div>
+
+      <!-- Description -->
+      <div class="form-field">
+        <label for="description" class="form-label">Description</label>
+        <textarea id="description" formControlName="description" rows="3" class="form-textarea" placeholder="Enter transaction description..."></textarea>
+        @if (form.get('description')?.touched && form.get('description')?.errors) {
+          <p class="form-error">{{ getFieldError('description') }}</p>
+        }
+      </div>
+
+      @if (validationErrors().length > 0) {
+        <div class="validation-errors">
+          <p class="validation-errors-title">Please fix the following errors:</p>
+          <ul class="validation-errors-list">
+            @for (error of validationErrors(); track error.code) {
+              <li>{{ error.message }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      <div class="form-actions">
+        <app-button type="submit" [loading]="isSubmitting()" [disabled]="form.invalid">
+          {{ isScheduled() ? 'Schedule Transaction' : 'Create Transaction' }}
+        </app-button>
+        <app-button type="button" variant="outline" (clicked)="saveDraft()">Save Draft</app-button>
+        <app-button type="button" variant="ghost" (clicked)="goBack()">Cancel</app-button>
+      </div>
+    </form>
+  </app-card>
+</div>

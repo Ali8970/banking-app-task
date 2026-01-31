@@ -1,0 +1,82 @@
+[
+  {
+    "id": "cust_001",
+    "name": "Ahmed Mohamed Hassan",
+    "email": "ahmed.hassan@email.com",
+    "phone": "+20 100 123 4567",
+    "nationalId": "29001011234567",
+    "createdAt": "2023-01-15T10:30:00Z"
+  },
+  {
+    "id": "cust_002",
+    "name": "Sara Ibrahim Ali",
+    "email": "sara.ibrahim@email.com",
+    "phone": "+20 101 234 5678",
+    "nationalId": "29502022345678",
+    "createdAt": "2023-03-20T14:45:00Z"
+  },
+  {
+    "id": "cust_003",
+    "name": "Omar Khaled Mansour",
+    "email": "omar.mansour@email.com",
+    "phone": "+20 102 345 6789",
+    "nationalId": "28803033456789",
+    "createdAt": "2023-05-10T09:15:00Z"
+  },
+  {
+    "id": "cust_004",
+    "name": "Fatima Youssef Nabil",
+    "email": "fatima.youssef@email.com",
+    "phone": "+20 103 456 7890",
+    "nationalId": "29104044567890",
+    "createdAt": "2023-07-25T16:20:00Z"
+  },
+  {
+    "id": "cust_005",
+    "name": "Mahmoud Samir El-Din",
+    "email": "mahmoud.samir@email.com",
+    "phone": "+20 104 567 8901",
+    "nationalId": "28505055678901",
+    "createdAt": "2023-09-05T11:00:00Z"
+  },
+  {
+    "id": "cust_006",
+    "name": "Nour Ahmed Farouk",
+    "email": "nour.farouk@email.com",
+    "phone": "+20 105 678 9012",
+    "nationalId": "29706066789012",
+    "createdAt": "2023-10-12T08:30:00Z"
+  },
+  {
+    "id": "cust_007",
+    "name": "Youssef Tarek Abdel-Rahman",
+    "email": "youssef.tarek@email.com",
+    "phone": "+20 106 789 0123",
+    "nationalId": "28807077890123",
+    "createdAt": "2023-11-18T13:45:00Z"
+  },
+  {
+    "id": "cust_008",
+    "name": "Layla Hassan Mohamed",
+    "email": "layla.hassan@email.com",
+    "phone": "+20 107 890 1234",
+    "nationalId": "29908088901234",
+    "createdAt": "2023-12-05T10:00:00Z"
+  },
+  {
+    "id": "cust_009",
+    "name": "Kareem Mostafa Salem",
+    "email": "kareem.salem@email.com",
+    "phone": "+20 108 901 2345",
+    "nationalId": "29009099012345",
+    "createdAt": "2024-01-20T15:30:00Z"
+  },
+  {
+    "id": "cust_010",
+    "name": "Dina Waleed Rashid",
+    "email": "dina.rashid@email.com",
+    "phone": "+20 109 012 3456",
+    "nationalId": "29510100123456",
+    "createdAt": "2024-02-28T09:00:00Z"
+  }
+]

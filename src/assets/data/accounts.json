@@ -1,0 +1,202 @@
+[
+  {
+    "id": "acc_001",
+    "customerId": "cust_001",
+    "accountNumber": "1234-5678-9012-3456",
+    "type": "checking",
+    "status": "active",
+    "currency": "EGP",
+    "openingDate": "2023-01-20",
+    "openingBalance": 50000
+  },
+  {
+    "id": "acc_002",
+    "customerId": "cust_001",
+    "accountNumber": "1234-5678-9012-7890",
+    "type": "savings",
+    "status": "active",
+    "currency": "USD",
+    "openingDate": "2023-02-15",
+    "openingBalance": 5000
+  },
+  {
+    "id": "acc_003",
+    "customerId": "cust_002",
+    "accountNumber": "2345-6789-0123-4567",
+    "type": "checking",
+    "status": "active",
+    "currency": "EGP",
+    "openingDate": "2023-03-25",
+    "openingBalance": 75000
+  },
+  {
+    "id": "acc_004",
+    "customerId": "cust_002",
+    "accountNumber": "2345-6789-0123-8901",
+    "type": "savings",
+    "status": "frozen",
+    "currency": "EGP",
+    "openingDate": "2023-04-10",
+    "openingBalance": 120000
+  },
+  {
+    "id": "acc_005",
+    "customerId": "cust_003",
+    "accountNumber": "3456-7890-1234-5678",
+    "type": "current",
+    "status": "active",
+    "currency": "EUR",
+    "openingDate": "2023-05-15",
+    "openingBalance": 3000
+  },
+  {
+    "id": "acc_006",
+    "customerId": "cust_003",
+    "accountNumber": "3456-7890-1234-9012",
+    "type": "checking",
+    "status": "inactive",
+    "currency": "EGP",
+    "openingDate": "2023-06-01",
+    "openingBalance": 10000
+  },
+  {
+    "id": "acc_007",
+    "customerId": "cust_004",
+    "accountNumber": "4567-8901-2345-6789",
+    "type": "savings",
+    "status": "active",
+    "currency": "EGP",
+    "openingDate": "2023-07-30",
+    "openingBalance": 200000
+  },
+  {
+    "id": "acc_008",
+    "customerId": "cust_004",
+    "accountNumber": "4567-8901-2345-0123",
+    "type": "checking",
+    "status": "active",
+    "currency": "SAR",
+    "openingDate": "2023-08-15",
+    "openingBalance": 15000
+  },
+  {
+    "id": "acc_009",
+    "customerId": "cust_005",
+    "accountNumber": "5678-9012-3456-7890",
+    "type": "current",
+    "status": "active",
+    "currency": "EGP",
+    "openingDate": "2023-09-10",
+    "openingBalance": 85000
+  },
+  {
+    "id": "acc_010",
+    "customerId": "cust_005",
+    "accountNumber": "5678-9012-3456-1234",
+    "type": "savings",
+    "status": "active",
+    "currency": "GBP",
+    "openingDate": "2023-10-01",
+    "openingBalance": 2500
+  },
+  {
+    "id": "acc_011",
+    "customerId": "cust_006",
+    "accountNumber": "6789-0123-4567-8901",
+    "type": "checking",
+    "status": "active",
+    "currency": "EGP",
+    "openingDate": "2023-10-15",
+    "openingBalance": 45000
+  },
+  {
+    "id": "acc_012",
+    "customerId": "cust_006",
+    "accountNumber": "6789-0123-4567-2345",
+    "type": "savings",
+    "status": "frozen",
+    "currency": "USD",
+    "openingDate": "2023-11-01",
+    "openingBalance": 8000
+  },
+  {
+    "id": "acc_013",
+    "customerId": "cust_007",
+    "accountNumber": "7890-1234-5678-9012",
+    "type": "current",
+    "status": "active",
+    "currency": "EGP",
+    "openingDate": "2023-11-20",
+    "openingBalance": 150000
+  },
+  {
+    "id": "acc_014",
+    "customerId": "cust_007",
+    "accountNumber": "7890-1234-5678-3456",
+    "type": "savings",
+    "status": "inactive",
+    "currency": "EUR",
+    "openingDate": "2023-12-01",
+    "openingBalance": 5000
+  },
+  {
+    "id": "acc_015",
+    "customerId": "cust_008",
+    "accountNumber": "8901-2345-6789-0123",
+    "type": "checking",
+    "status": "active",
+    "currency": "EGP",
+    "openingDate": "2023-12-10",
+    "openingBalance": 95000
+  },
+  {
+    "id": "acc_016",
+    "customerId": "cust_008",
+    "accountNumber": "8901-2345-6789-4567",
+    "type": "savings",
+    "status": "active",
+    "currency": "SAR",
+    "openingDate": "2024-01-05",
+    "openingBalance": 25000
+  },
+  {
+    "id": "acc_017",
+    "customerId": "cust_009",
+    "accountNumber": "9012-3456-7890-1234",
+    "type": "current",
+    "status": "active",
+    "currency": "EGP",
+    "openingDate": "2024-01-25",
+    "openingBalance": 180000
+  },
+  {
+    "id": "acc_018",
+    "customerId": "cust_009",
+    "accountNumber": "9012-3456-7890-5678",
+    "type": "checking",
+    "status": "frozen",
+    "currency": "GBP",
+    "openingDate": "2024-02-10",
+    "openingBalance": 4000
+  },
+  {
+    "id": "acc_019",
+    "customerId": "cust_010",
+    "accountNumber": "0123-4567-8901-2345",
+    "type": "savings",
+    "status": "active",
+    "currency": "EGP",
+    "openingDate": "2024-03-01",
+    "openingBalance": 65000
+  },
+  {
+    "id": "acc_020",
+    "customerId": "cust_010",
+    "accountNumber": "0123-4567-8901-6789",
+    "type": "checking",
+    "status": "active",
+    "currency": "USD",
+    "openingDate": "2024-03-15",
+    "openingBalance": 3500
+  }
+]

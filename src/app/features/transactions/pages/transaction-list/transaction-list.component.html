@@ -1,0 +1,161 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="breadcrumb">
+      <button type="button" class="breadcrumb-link" (click)="goToCustomers()">Customers</button>
+      <svg class="breadcrumb-sep" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      <button type="button" class="breadcrumb-link" (click)="goToAccounts()">Accounts</button>
+      <svg class="breadcrumb-sep" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      <span class="breadcrumb-current">Transactions</span>
+    </div>
+
+    <div class="header-row">
+      <div>
+        <h1 class="page-title">Transactions</h1>
+        @if (customerState.selectedAccount()) {
+          <p class="page-subtitle">
+            {{ customerState.selectedAccount()?.accountNumber }} - {{ customerState.selectedAccount()?.type }}
+          </p>
+        }
+      </div>
+
+      @if (authService.canCreateTransaction() && customerState.hasSelectedAccount()) {
+        <div class="header-actions">
+          @if (transactionService.hasDraft()) {
+            <app-button variant="outline" (clicked)="resumeDraft()">Resume Draft</app-button>
+          }
+          <app-button (clicked)="createTransaction()">
+            <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            New Transaction
+          </app-button>
+        </div>
+      }
+    </div>
+  </div>
+
+  @if (!customerState.hasSelectedAccount()) {
+    <app-empty-state
+      icon="document"
+      title="No account selected"
+      description="Please select an account to view transactions"
+    >
+      <app-button (clicked)="goToAccounts()">Select Account</app-button>
+    </app-empty-state>
+  } @else {
+    <!-- Account Summary -->
+    <div class="summary-grid">
+      <app-card>
+        <div class="summary-item">
+          <p class="summary-label">Current Balance</p>
+          <p class="summary-value">{{ transactionService.accountBalance() | currencyFormat:customerState.selectedAccount()?.currency }}</p>
+        </div>
+      </app-card>
+      <app-card>
+               <div class="summary-item">
+          <p class="summary-label">Today's Debits</p>
+          <p class="summary-value summary-value-danger">{{ transactionService.todayDebitTotal() | currencyFormat:customerState.selectedAccount()?.currency }}</p>
+          <p class="summary-hint">Limit: {{ remainingLimitText() }}</p>
+        </div>
+      </app-card>
+      <app-card>
+        <div class="summary-item">
+          <p class="summary-label">Today's Transactions</p>
+          <p class="summary-value summary-value-info">{{ transactionService.todayTransactionCount() }}</p>
+          <p class="summary-hint">Max: 10/day</p>
+        </div>
+      </app-card>
+      <app-card>
+        <div class="summary-item">
+          <p class="summary-label">Scheduled</p>
+          <p class="summary-value summary-value-warning">{{ transactionService.scheduledTransactions().length }}</p>
+          @if (transactionService.scheduledTransactions().length > 0) {
+            <button type="button" class="process-link" (click)="processScheduled()">Process now</button>
+          }
+        </div>
+      </app-card>
+    </div>
+
+    <!-- Undo Banner -->
+    @if (transactionService.canUndo()) {
+      <div class="undo-banner">
+        <p class="undo-text">Transaction created: {{ transactionService.lastTransaction()?.description }}</p>
+        <button type="button" class="undo-btn" (click)="undoTransaction()">Undo</button>
+      </div>
+    }
+
+    <!-- Tabs -->
+    <div class="tabs">
+      @for (tab of tabs; track tab.id) {
+        <button
+          type="button"
+          class="tab-btn"
+          [class.tab-btn-active]="activeTab() === tab.id"
+          (click)="setActiveTab(tab.id)"
+        >
+          {{ tab.label }}
+          <span class="tab-count" [class.tab-count-active]="activeTab() === tab.id">
+            {{ tab.id === 'all' ? transactionService.accountTransactions().length
+              : tab.id === 'completed' ? transactionService.completedTransactions().length
+              : transactionService.scheduledTransactions().length }}
+          </span>
+        </button>
+      }
+    </div>
+
+    @if (filteredTransactions().length === 0) {
+      <app-empty-state
+        icon="document"
+        title="No transactions"
+        description="There are no transactions matching the current filter"
+      />
+    } @else {
+      <cdk-virtual-scroll-viewport itemSize="88" class="transaction-viewport">
+        <div
+          *cdkVirtualFor="let txn of filteredTransactions(); trackBy: trackTransaction"
+          class="transaction-row"
+        >
+          <div class="transaction-inner">
+            <div class="txn-icon" [class.txn-icon-credit]="txn.type === 'credit'" [class.txn-icon-debit]="txn.type === 'debit'">
+              @if (txn.type === 'credit') {
+                <svg class="txn-icon-svg txn-icon-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+              } @else {
+                <svg class="txn-icon-svg txn-icon-red" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                </svg>
+              }
+            </div>
+            <div class="txn-details">
+              <div class="txn-title-row">
+                <p class="txn-description">{{ txn.description }}</p>
+                @if (txn.status === 'scheduled') {
+                  <app-badge variant="warning">Scheduled</app-badge>
+                }
+              </div>
+              <div class="txn-meta">
+                <span class="txn-category">{{ txn.category }}</span>
+                <span class="txn-sep">•</span>
+                <span class="txn-date">{{ txn.date | relativeDate }}</span>
+                @if (txn.reference) {
+                  <span class="txn-sep">•</span>
+                  <span class="txn-ref">{{ txn.reference }}</span>
+                }
+              </div>
+            </div>
+            <div class="txn-amount" [class.txn-amount-credit]="txn.type === 'credit'" [class.txn-amount-debit]="txn.type === 'debit'">
+              <p class="txn-amount-value">{{ txn.type === 'credit' ? '+' : '-' }}{{ txn.amount | currencyFormat:txn.currency }}</p>
+              <p class="txn-currency">{{ txn.currency }}</p>
+            </div>
+          </div>
+        </div>
+      </cdk-virtual-scroll-viewport>
+    }
+  }
+</div>

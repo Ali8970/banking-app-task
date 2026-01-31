@@ -1,0 +1,142 @@
+:host {
+  display: block;
+}
+
+.toast-container {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 24rem;
+  width: 100%;
+}
+
+.toast-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  background-color: white;
+  border: 1px solid transparent;
+  animation: toast-slide-up 0.2s ease-out;
+}
+
+@keyframes toast-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toast-item.toast-success {
+  border-color: #bbf7d0;
+}
+
+.toast-item.toast-error {
+  border-color: #fecaca;
+}
+
+.toast-item.toast-warning {
+  border-color: #fde68a;
+}
+
+.toast-item.toast-info {
+  border-color: #bfdbfe;
+}
+
+.toast-icon {
+  flex-shrink: 0;
+}
+
+.toast-icon-svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.toast-icon-success {
+  color: #22c55e;
+}
+
+.toast-icon-error {
+  color: #ef4444;
+}
+
+.toast-icon-warning {
+  color: #eab308;
+}
+
+.toast-icon-info {
+  color: #3b82f6;
+}
+
+.toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #0f172a;
+  margin: 0;
+}
+
+.toast-message {
+  font-size: 0.875rem;
+  color: #475569;
+  margin: 0;
+}
+
+.toast-action-btn {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #2563eb;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.toast-action-btn:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.toast-action-btn:focus {
+  outline: none;
+  text-decoration: underline;
+}
+
+.toast-close {
+  flex-shrink: 0;
+  color: #94a3b8;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 0.25rem;
+}
+
+.toast-close:hover {
+  color: #64748b;
+}
+
+.toast-close:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #94a3b8;
+}
+
+.toast-close-svg {
+  width: 1rem;
+  height: 1rem;
+}

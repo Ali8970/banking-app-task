@@ -1,0 +1,131 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="breadcrumb">
+      <button type="button" class="breadcrumb-link" (click)="goToCustomers()">
+        Customers
+      </button>
+      <svg class="breadcrumb-sep" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      <span class="breadcrumb-current">{{ customerState.selectedCustomer()?.name || 'Accounts' }}</span>
+    </div>
+    <h1 class="page-title">Accounts</h1>
+    <p class="page-subtitle">
+      @if (customerState.hasSelectedCustomer()) {
+        Viewing accounts for {{ customerState.selectedCustomer()?.name }}
+      } @else {
+        Select a customer to view their accounts
+      }
+    </p>
+  </div>
+
+  @if (!customerState.hasSelectedCustomer()) {
+    <app-empty-state
+      icon="credit-card"
+      title="No customer selected"
+      description="Please select a customer first to view their accounts"
+    >
+      <app-button (clicked)="goToCustomers()">
+        Select Customer
+      </app-button>
+    </app-empty-state>
+  } @else if (dataLoader.isLoading()) {
+    <div class="grid-loading">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <app-card>
+          <div class="skeleton-content">
+            <app-skeleton height="1rem" width="40%" />
+            <app-skeleton height="2rem" width="60%" />
+            <app-skeleton height="1rem" width="80%" />
+          </div>
+        </app-card>
+      }
+    </div>
+  } @else if (customerState.customerAccounts().length === 0) {
+    <app-empty-state
+      icon="credit-card"
+      title="No accounts found"
+      description="This customer doesn't have any accounts yet"
+    />
+  } @else {
+    <!-- Account Summary Cards -->
+    <div class="summary-grid">
+      <app-card>
+        <div class="summary-item">
+          <p class="summary-label">Total Accounts</p>
+          <p class="summary-value">{{ customerState.customerAccounts().length }}</p>
+        </div>
+      </app-card>
+      <app-card>
+        <div class="summary-item">
+          <p class="summary-label">Active Accounts</p>
+          <p class="summary-value summary-value-success">{{ activeAccountsCount() }}</p>
+        </div>
+      </app-card>
+      <app-card>
+        <div class="summary-item">
+          <p class="summary-label">Currencies</p>
+          <p class="summary-value summary-value-info">{{ uniqueCurrencies().length }}</p>
+        </div>
+      </app-card>
+    </div>
+
+    <!-- Account List -->
+    <div class="account-grid">
+      @for (account of customerState.customerAccounts(); track account.id) {
+        <button
+          type="button"
+          class="account-card-btn"
+          (click)="selectAccount(account)"
+          [disabled]="account.status === 'inactive'"
+          [class.account-card-disabled]="account.status === 'inactive'"
+        >
+          <app-card [hoverable]="account.status !== 'inactive'">
+            <div class="account-card-content">
+              <!-- Header -->
+              <div class="account-header">
+                <div>
+                  <div class="account-type-row">
+                    <span class="account-type">{{ account.type }}</span>
+                    <app-badge [variant]="getStatusVariant(account.status)" [dot]="true">
+                      {{ account.status }}
+                    </app-badge>
+                  </div>
+                  <p class="account-number">{{ account.accountNumber }}</p>
+                </div>
+                <div class="account-currency-badge" [class]="getCurrencyBgClass(account.currency)">
+                  <span class="account-currency-symbol">{{ getCurrencySymbol(account.currency) }}</span>
+                </div>
+              </div>
+
+              <!-- Balance -->
+              <div class="account-balance">
+                <p class="balance-label">Current Balance</p>
+                <p class="balance-value">
+                  {{ getAccountBalance(account) | currencyFormat:account.currency }}
+                </p>
+              </div>
+
+              <!-- Footer -->
+              <div class="account-footer">
+                <span class="account-opened">
+                  Opened {{ formatDate(account.openingDate) }}
+                </span>
+                @if (account.status === 'frozen') {
+                  <span class="account-status-warning">Debits disabled</span>
+                } @else if (account.status === 'inactive') {
+                  <span class="account-status-danger">Account inactive</span>
+                } @else {
+                  <svg class="account-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                }
+              </div>
+            </div>
+          </app-card>
+        </button>
+      }
+    </div>
+  }
+</div>
