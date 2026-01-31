@@ -3,9 +3,6 @@ import { Router } from '@angular/router';
 import { DataLoaderService, CustomerStateService, Customer } from '@core/index';
 import { CardComponent, EmptyStateComponent, SkeletonComponent } from '@shared/index';
 
-/**
- * Customer List Component - Display and select customers
- */
 @Component({
   selector: 'app-customer-list',
   imports: [CardComponent, EmptyStateComponent, SkeletonComponent],

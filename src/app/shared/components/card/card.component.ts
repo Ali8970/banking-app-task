@@ -1,8 +1,5 @@
 import { Component, input } from '@angular/core';
 
-/**
- * Card Component - Container with consistent styling
- */
 @Component({
   selector: 'app-card',
   templateUrl: './card.component.html',

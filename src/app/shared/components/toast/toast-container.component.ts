@@ -1,9 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { ToastService, Toast } from './toast.service';
 
-/**
- * Toast Container Component - Renders all active toasts
- */
 @Component({
   selector: 'app-toast-container',
   templateUrl: './toast-container.component.html',

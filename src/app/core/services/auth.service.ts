@@ -4,7 +4,6 @@ import { StorageService } from './storage.service';
 import { LoggerService } from './logger.service';
 import { User, UserRole, AuthToken, BUSINESS_RULES } from '../models';
 
-// Demo users for authentication
 const DEMO_USERS: Record<string, { password: string; user: Omit<User, 'id'> }> = {
   admin: {
     password: 'admin123',
@@ -20,15 +19,6 @@ const DEMO_USERS: Record<string, { password: string; user: Omit<User, 'id'> }> =
   }
 };
 
-/**
- * Auth Service - Handles authentication, authorization, and session management
- * 
- * Features:
- * - Fake JWT token generation (client-side simulation)
- * - Secure token storage (memory + session)
- * - Auto logout on inactivity
- * - Role-based access control
- */
 @Injectable({
   providedIn: 'root'
 })
@@ -37,16 +27,13 @@ export class AuthService {
   private readonly logger = inject(LoggerService);
   private readonly router = inject(Router);
 
-  // State signals
   private readonly _currentUser = signal<User | null>(null);
   private readonly _isAuthenticated = signal(false);
   private readonly _isLoading = signal(false);
 
-  // Inactivity timer
   private inactivityTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly activityEvents = ['mousedown', 'keydown', 'touchstart', 'scroll'];
 
-  // Public computed signals
   readonly currentUser = this._currentUser.asReadonly();
   readonly isAuthenticated = this._isAuthenticated.asReadonly();
   readonly isLoading = this._isLoading.asReadonly();

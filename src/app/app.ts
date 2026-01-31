@@ -3,14 +3,6 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/rou
 import { AuthService } from '@core/index';
 import { ToastContainerComponent } from '@shared/index';
 
-/**
- * App Component - Main application shell
- * 
- * Features:
- * - Navigation sidebar (when authenticated)
- * - User info and logout
- * - Toast notifications
- */
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastContainerComponent],

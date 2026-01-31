@@ -1,14 +1,6 @@
 import { Injectable, inject, computed } from '@angular/core';
 import { DataLoaderService, CustomerStateService, MonthlySpending, AnalyticsData } from '@core/index';
 
-/**
- * Analytics Service - Computes financial insights from transaction data
- * 
- * Features:
- * - Spending trend (last 3 months)
- * - Average transaction size
- * - Abnormal spending detection (rule-based)
- */
 @Injectable({
   providedIn: 'root'
 })
@@ -16,12 +8,8 @@ export class AnalyticsService {
   private readonly dataLoader = inject(DataLoaderService);
   private readonly customerState = inject(CustomerStateService);
 
-  // Threshold for abnormal spending (150% of average)
   private readonly ABNORMAL_THRESHOLD = 1.5;
 
-  /**
-   * Get transactions for selected customer's accounts
-   */
   private readonly customerTransactions = computed(() => {
     const customerId = this.customerState.selectedCustomerId();
     if (!customerId) return [];
@@ -34,9 +22,6 @@ export class AnalyticsService {
       .filter(t => accountIds.includes(t.accountId) && t.status === 'completed');
   });
 
-  /**
-   * Get debit transactions only (spending)
-   */
   private readonly debitTransactions = computed(() => 
     this.customerTransactions().filter(t => t.type === 'debit')
   );
@@ -49,14 +34,12 @@ export class AnalyticsService {
     const now = new Date();
     const months: MonthlySpending[] = [];
 
-    // Generate last 3 months
     for (let i = 2; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const year = date.getFullYear();
       const month = date.toLocaleString('en-US', { month: 'short' });
       const monthNum = date.getMonth();
 
-      // Filter transactions for this month
       const monthTransactions = transactions.filter(t => {
         const txnDate = new Date(t.date);
         return txnDate.getFullYear() === year && txnDate.getMonth() === monthNum;
@@ -71,9 +54,6 @@ export class AnalyticsService {
     return months;
   });
 
-  /**
-   * Average transaction size
-   */
   readonly averageTransactionSize = computed(() => {
     const transactions = this.customerTransactions();
     if (transactions.length === 0) return 0;
@@ -93,9 +73,6 @@ export class AnalyticsService {
     return Math.round(total / debits.length);
   });
 
-  /**
-   * Total spending amount
-   */
   readonly totalSpending = computed(() => 
     this.debitTransactions().reduce((sum, t) => sum + t.amount, 0)
   );
@@ -109,9 +86,6 @@ export class AnalyticsService {
       .reduce((sum, t) => sum + t.amount, 0)
   );
 
-  /**
-   * Detect abnormal spending (any transaction > 150% of average)
-   */
   readonly abnormalSpending = computed(() => {
     const debits = this.debitTransactions();
     const average = this.averageSpending();
@@ -138,9 +112,6 @@ export class AnalyticsService {
     };
   });
 
-  /**
-   * Spending by category
-   */
   readonly spendingByCategory = computed(() => {
     const debits = this.debitTransactions();
     const byCategory: Record<string, number> = {};
@@ -175,9 +146,6 @@ export class AnalyticsService {
     return { change, percentage, direction };
   });
 
-  /**
-   * Get full analytics data
-   */
   readonly analyticsData = computed((): AnalyticsData => ({
     spendingTrend: this.spendingTrend(),
     averageTransactionSize: this.averageTransactionSize(),

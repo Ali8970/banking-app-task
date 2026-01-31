@@ -3,9 +3,6 @@ import { Component, input } from '@angular/core';
 type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info';
 type BadgeSize = 'sm' | 'md';
 
-/**
- * Badge Component - Status indicator
- */
 @Component({
   selector: 'app-badge',
   templateUrl: './badge.component.html',

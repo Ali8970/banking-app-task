@@ -2,10 +2,6 @@ import { Component, input } from '@angular/core';
 
 type SkeletonVariant = 'text' | 'circular' | 'rectangular' | 'rounded';
 
-/**
- * Skeleton Component - Loading placeholder for content
- * Used throughout the app for consistent loading states
- */
 @Component({
   selector: 'app-skeleton',
   templateUrl: './skeleton.component.html',

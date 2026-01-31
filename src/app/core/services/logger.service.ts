@@ -10,11 +10,6 @@ export interface LogEntry {
   data?: unknown;
 }
 
-/**
- * Logger Service - Abstraction for logging
- * Currently uses console, but can be extended to use external logging services
- * Single Responsibility: Only handles logging concerns
- */
 @Injectable({
   providedIn: 'root'
 })

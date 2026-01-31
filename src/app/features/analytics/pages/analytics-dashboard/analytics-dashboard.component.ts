@@ -11,15 +11,6 @@ import {
 } from '@shared/index';
 import { CurrencyFormatPipe } from '@shared/pipes';
 
-/**
- * Analytics Dashboard Component - Financial insights display
- * 
- * Features:
- * - Spending trend visualization
- * - Average transaction metrics
- * - Abnormal spending alerts
- * - Category breakdown
- */
 @Component({
   selector: 'app-analytics-dashboard',
   imports: [

@@ -1,40 +1,37 @@
 import { Component, inject, signal, OnInit, OnDestroy, computed } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { form, FormField, maxLength, min, minLength, required } from '@angular/forms/signals';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TitleCasePipe } from '@angular/common';
-import { 
-  CustomerStateService, 
-  TransactionType, 
+import {
+  CustomerStateService,
+  TransactionType,
   TransactionCategory,
   DraftTransaction,
-  BUSINESS_RULES 
+  BUSINESS_RULES
 } from '@core/index';
 import { TransactionService } from '../../services/transaction.service';
-import { 
-  CardComponent, 
-  ButtonComponent, 
-  ToastService 
+import {
+  CardComponent,
+  ButtonComponent,
+  ToastService
 } from '@shared/index';
-import { getErrorMessage } from '@shared/utils/error-map';
 import { CurrencyFormatPipe } from '@shared/pipes';
 
-/**
- * Create Transaction Component - Form for creating new transactions
- * 
- * Features:
- * - Real-time validation
- * - Draft save/resume
- * - Scheduled transactions (future dates)
- * - Business rule enforcement
- */
+interface TransactionFormData {
+  type: TransactionType;
+  amount: number;
+  category: TransactionCategory | '';
+  date: string;
+  description: string;
+}
+
 @Component({
   selector: 'app-create-transaction',
-  imports: [ReactiveFormsModule, TitleCasePipe, CardComponent, ButtonComponent, CurrencyFormatPipe],
+  imports: [FormField, TitleCasePipe, CardComponent, ButtonComponent, CurrencyFormatPipe],
   templateUrl: './create-transaction.component.html',
   styleUrl: './create-transaction.component.css'
 })
 export class CreateTransactionComponent implements OnInit, OnDestroy {
-  private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   readonly customerState = inject(CustomerStateService);
@@ -45,14 +42,24 @@ export class CreateTransactionComponent implements OnInit, OnDestroy {
   readonly validationErrors = signal<{ code: string; message: string }[]>([]);
 
   readonly today = new Date().toISOString().split('T')[0];
-  readonly minDate = this.customerState.selectedAccount()?.openingDate || this.today;
+  readonly minDate = this.customerState.selectedAccount()?.openingDate ?? this.today;
 
-  form: FormGroup = this.fb.group({
-    type: ['credit' as TransactionType, [Validators.required]],
-    amount: [null, [Validators.required, Validators.min(0.01)]],
-    category: ['', [Validators.required]],
-    date: [this.today, [Validators.required]],
-    description: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(200)]]
+  readonly transactionModel = signal<TransactionFormData>({
+    type: 'credit',
+    amount: 0,
+    category: '',
+    date: this.today,
+    description: ''
+  });
+
+  readonly transactionForm = form(this.transactionModel, (schemaPath) => {
+    required(schemaPath.type);
+    min(schemaPath.amount, 0.01, { message: 'Amount must be at least 0.01' });
+    required(schemaPath.category, { message: 'Category is required' });
+    required(schemaPath.date, { message: 'Date is required' });
+    required(schemaPath.description, { message: 'Description is required' });
+    minLength(schemaPath.description, 3, { message: 'Description must be at least 3 characters' });
+    maxLength(schemaPath.description, 200, { message: 'Description cannot exceed 200 characters' });
   });
 
   readonly currencySymbol = computed(() => {
@@ -64,47 +71,34 @@ export class CreateTransactionComponent implements OnInit, OnDestroy {
       GBP: '£',
       SAR: 'SR'
     };
-    return symbols[currency || 'EGP'] || currency || 'E£';
+    return symbols[currency ?? 'EGP'] ?? currency ?? 'E£';
   });
 
   readonly availableCategories = computed(() => {
-    const type = this.form.get('type')?.value as TransactionType;
+    const type = this.transactionForm.type().value();
     const allCategories: TransactionCategory[] = [
       'salary', 'transfer', 'payment', 'withdrawal', 'deposit', 'income', 'fees', 'refund', 'other'
     ];
-    
-    // Filter based on type
     if (type === 'credit') {
       return allCategories.filter(c => !BUSINESS_RULES.DEBIT_ONLY_CATEGORIES.includes(c));
-    } else {
-      return allCategories.filter(c => !BUSINESS_RULES.CREDIT_ONLY_CATEGORIES.includes(c));
     }
+    return allCategories.filter(c => !BUSINESS_RULES.CREDIT_ONLY_CATEGORIES.includes(c));
   });
 
   readonly isScheduled = computed(() => {
-    const date = this.form.get('date')?.value;
-    return date && date > this.today;
+    const date = this.transactionForm.date().value();
+    return Boolean(date && date > this.today);
   });
 
   ngOnInit(): void {
-    // Check for draft resume
     const resume = this.route.snapshot.queryParams['resume'];
     if (resume === 'true') {
       this.loadDraft();
     }
-
-    // Listen for type changes to reset category if invalid
-    this.form.get('type')?.valueChanges.subscribe(() => {
-      const currentCategory = this.form.get('category')?.value;
-      if (currentCategory && !this.availableCategories().includes(currentCategory)) {
-        this.form.get('category')?.setValue('');
-      }
-    });
   }
 
   ngOnDestroy(): void {
-    // Auto-save draft if form has values
-    if (this.form.dirty && !this.isSubmitting()) {
+    if (!this.isSubmitting() && this.transactionForm().dirty()) {
       this.autoSaveDraft();
     }
   }
@@ -114,31 +108,37 @@ export class CreateTransactionComponent implements OnInit, OnDestroy {
     if (type === 'debit' && account?.status === 'frozen') {
       return;
     }
-    this.form.get('type')?.setValue(type);
+    this.transactionForm.type().value.set(type);
+    const cats = this.availableCategories();
+    const currentCat = this.transactionForm.category().value();
+    if (currentCat && !cats.includes(currentCat as TransactionCategory)) {
+      this.transactionForm.category().value.set('');
+    }
   }
 
   loadDraft(): void {
     const draft = this.transactionService.getDraft();
     if (draft) {
-      this.form.patchValue({
-        type: draft.type || 'credit',
-        amount: draft.amount || null,
-        category: draft.category || '',
-        date: draft.date || this.today,
-        description: draft.description || ''
+      this.transactionModel.set({
+        type: (draft.type ?? 'credit') as TransactionType,
+        amount: draft.amount ?? 0,
+        category: (draft.category ?? '') as TransactionFormData['category'],
+        date: draft.date ?? this.today,
+        description: draft.description ?? ''
       });
       this.toast.info('Draft loaded');
     }
   }
 
   saveDraft(): void {
+    const data = this.transactionModel();
     const draft: DraftTransaction = {
-      accountId: this.customerState.selectedAccountId() || undefined,
-      type: this.form.get('type')?.value,
-      amount: this.form.get('amount')?.value,
-      category: this.form.get('category')?.value,
-      date: this.form.get('date')?.value,
-      description: this.form.get('description')?.value,
+      accountId: this.customerState.selectedAccountId() ?? undefined,
+      type: data.type,
+      amount: data.amount ?? undefined,
+      category: data.category || undefined,
+      date: data.date || undefined,
+      description: data.description || undefined,
       savedAt: new Date().toISOString()
     };
     this.transactionService.saveDraft(draft);
@@ -146,51 +146,47 @@ export class CreateTransactionComponent implements OnInit, OnDestroy {
   }
 
   private autoSaveDraft(): void {
-    const values = this.form.value;
-    if (values.amount || values.description) {
+    const data = this.transactionModel();
+    if (data.amount > 0 || data.description) {
       this.saveDraft();
     }
   }
 
-  onSubmit(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
+  onSubmit(event: Event): void {
+    event.preventDefault();
+
+    if (this.transactionForm().invalid()) {
       return;
     }
 
     this.isSubmitting.set(true);
     this.validationErrors.set([]);
 
-    const { type, amount, category, date, description } = this.form.value;
-    
+    const { type, amount, category, date, description } = this.transactionModel();
+
     const result = this.transactionService.createTransaction(
       type,
-      category,
-      amount,
+      category as TransactionCategory,
+      amount ?? 0,
       description,
       date
     );
 
     if (result.success) {
-      const message = this.isScheduled() 
-        ? 'Transaction scheduled successfully' 
+      const message = this.isScheduled()
+        ? 'Transaction scheduled successfully'
         : 'Transaction created successfully';
       this.toast.showWithUndo(message, () => {
         this.transactionService.undoLastTransaction();
       });
       this.router.navigate(['/transactions']);
     } else {
-      this.validationErrors.set(result.errors || []);
+      this.validationErrors.set(result.errors ?? []);
       this.isSubmitting.set(false);
     }
   }
 
   goBack(): void {
     this.router.navigate(['/transactions']);
-  }
-
-  getFieldError(field: string): string {
-    const control = this.form.get(field);
-    return getErrorMessage(control?.errors || null);
   }
 }

@@ -1,25 +1,21 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { form, FormField, required } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/index';
 import { ButtonComponent } from '@shared/index';
 
-/**
- * Login Component - Authentication page
- * 
- * Demo credentials:
- * - admin / admin123 (Full access)
- * - teller / teller123 (Can create transactions)
- * - viewer / viewer123 (View only)
- */
+interface LoginData {
+  username: string;
+  password: string;
+}
+
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, ButtonComponent],
+  imports: [FormField, ButtonComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
-  private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
@@ -27,9 +23,14 @@ export class LoginComponent {
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
 
-  loginForm: FormGroup = this.fb.group({
-    username: ['', [Validators.required]],
-    password: ['', [Validators.required]]
+  readonly loginModel = signal<LoginData>({
+    username: '',
+    password: ''
+  });
+
+  readonly loginForm = form(this.loginModel, (schemaPath) => {
+    required(schemaPath.username, { message: 'Username is required' });
+    required(schemaPath.password, { message: 'Password is required' });
   });
 
   togglePassword(): void {
@@ -37,25 +38,27 @@ export class LoginComponent {
   }
 
   fillCredentials(username: string, password: string): void {
-    this.loginForm.patchValue({ username, password });
+    this.loginForm.username().value.set(username);
+    this.loginForm.password().value.set(password);
   }
 
-  onSubmit(): void {
-    if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched();
+  onSubmit(event: Event): void {
+    event.preventDefault();
+
+    if (this.loginForm().invalid()) {
       return;
     }
 
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    const { username, password } = this.loginForm.value;
+    const { username, password } = this.loginModel();
     const result = this.authService.login(username, password);
 
     if (result.success) {
       this.router.navigate(['/customers']);
     } else {
-      this.errorMessage.set(result.error || 'Login failed');
+      this.errorMessage.set(result.error ?? 'Login failed');
     }
 
     this.isLoading.set(false);

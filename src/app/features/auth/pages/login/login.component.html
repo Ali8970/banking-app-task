@@ -1,6 +1,5 @@
 <div class="login-page">
   <div class="login-container">
-    <!-- Logo and Title -->
     <div class="login-header">
       <div class="login-logo">
         <svg class="login-logo-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -11,33 +10,34 @@
       <p class="login-subtitle">Sign in to your banking portal</p>
     </div>
 
-    <!-- Login Form -->
     <div class="login-form-card">
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <!-- Username Field -->
+      <form (submit)="onSubmit($event)">
         <div class="form-field">
           <label for="username" class="form-label">Username</label>
           <input
             id="username"
             type="text"
-            formControlName="username"
+            [formField]="loginForm.username"
             class="form-input"
             placeholder="Enter your username"
             autocomplete="username"
           />
-          @if (loginForm.get('username')?.touched && loginForm.get('username')?.errors) {
-            <p class="form-error">Username is required</p>
+          @if (loginForm.username().touched() && loginForm.username().invalid()) {
+            <ul class="form-error-list">
+              @for (error of loginForm.username().errors(); track error.kind) {
+                <li class="form-error">{{ error.message }}</li>
+              }
+            </ul>
           }
         </div>
 
-        <!-- Password Field -->
         <div class="form-field">
           <label for="password" class="form-label">Password</label>
           <div class="password-wrapper">
             <input
               id="password"
               [type]="showPassword() ? 'text' : 'password'"
-              formControlName="password"
+              [formField]="loginForm.password"
               class="form-input form-input-password"
               placeholder="Enter your password"
               autocomplete="current-password"
@@ -60,12 +60,15 @@
               }
             </button>
           </div>
-          @if (loginForm.get('password')?.touched && loginForm.get('password')?.errors) {
-            <p class="form-error">Password is required</p>
+          @if (loginForm.password().touched() && loginForm.password().invalid()) {
+            <ul class="form-error-list">
+              @for (error of loginForm.password().errors(); track error.kind) {
+                <li class="form-error">{{ error.message }}</li>
+              }
+            </ul>
           }
         </div>
 
-        <!-- Error Message -->
         @if (errorMessage()) {
           <div class="error-banner">
             <svg class="error-icon" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
@@ -75,12 +78,11 @@
           </div>
         }
 
-        <!-- Submit Button -->
         <app-button
           type="submit"
           [fullWidth]="true"
           [loading]="isLoading()"
-          [disabled]="loginForm.invalid"
+          [disabled]="loginForm().invalid()"
           loadingText="Signing in..."
         >
           Sign In
@@ -88,7 +90,6 @@
       </form>
     </div>
 
-    <!-- Demo Credentials -->
     <div class="demo-credentials">
       <p class="demo-title">Demo Credentials</p>
       <div class="demo-list">

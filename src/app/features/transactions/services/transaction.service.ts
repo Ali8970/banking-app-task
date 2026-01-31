@@ -16,16 +16,6 @@ import {
 
 const DRAFT_KEY = 'transaction_draft';
 
-/**
- * Transaction Service - Core business logic for transactions
- * 
- * Features:
- * - Transaction validation (all business rules)
- * - Balance calculation (derived, not stored)
- * - Undo last transaction
- * - Draft save/resume
- * - Scheduled transaction processing
- */
 @Injectable({
   providedIn: 'root'
 })
@@ -35,19 +25,14 @@ export class TransactionService {
   private readonly storage = inject(StorageService);
   private readonly logger = inject(LoggerService);
 
-  // Undo stack (last transaction that can be undone)
   private readonly _lastTransaction = signal<Transaction | null>(null);
   private readonly _canUndo = signal(false);
-
-  // Draft state
   private readonly _hasDraft = signal(false);
 
-  // Public signals
   readonly lastTransaction = this._lastTransaction.asReadonly();
   readonly canUndo = this._canUndo.asReadonly();
   readonly hasDraft = this._hasDraft.asReadonly();
 
-  // Computed: Transactions for selected account
   readonly accountTransactions = computed(() => {
     const accountId = this.customerState.selectedAccountId();
     if (!accountId) return [];
@@ -55,19 +40,16 @@ export class TransactionService {
     return this.dataLoader.transactions()
       .filter(t => t.accountId === accountId)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  });
+  }  );
 
-  // Computed: Completed transactions only
-  readonly completedTransactions = computed(() => 
+  readonly completedTransactions = computed(() =>
     this.accountTransactions().filter(t => t.status === 'completed')
   );
 
-  // Computed: Scheduled transactions only
   readonly scheduledTransactions = computed(() => 
     this.accountTransactions().filter(t => t.status === 'scheduled')
   );
 
-  // Computed: Account balance (derived from transactions)
   readonly accountBalance = computed(() => {
     const account = this.customerState.selectedAccount();
     if (!account) return 0;
@@ -75,7 +57,6 @@ export class TransactionService {
     return this.calculateBalance(account, this.completedTransactions());
   });
 
-  // Computed: Daily debit total for today
   readonly todayDebitTotal = computed(() => {
     const accountId = this.customerState.selectedAccountId();
     if (!accountId) return 0;
@@ -86,12 +67,10 @@ export class TransactionService {
       .reduce((sum, t) => sum + t.amount, 0);
   });
 
-  // Computed: Remaining daily debit limit
   readonly remainingDailyLimit = computed(() => 
     Math.max(0, BUSINESS_RULES.DAILY_DEBIT_LIMIT - this.todayDebitTotal())
   );
 
-  // Computed: Today's transaction count
   readonly todayTransactionCount = computed(() => {
     const accountId = this.customerState.selectedAccountId();
     if (!accountId) return 0;
@@ -106,9 +85,6 @@ export class TransactionService {
     this.checkForDraft();
   }
 
-  /**
-   * Calculate account balance from transactions
-   */
   calculateBalance(account: Account, transactions: Transaction[]): number {
     let balance = account.openingBalance;
     
@@ -125,9 +101,6 @@ export class TransactionService {
     return balance;
   }
 
-  /**
-   * Validate a transaction before creation
-   */
   validateTransaction(
     amount: number,
     type: TransactionType,
@@ -143,7 +116,6 @@ export class TransactionService {
       return errors;
     }
 
-    // Account status validation
     if (account.status === 'inactive') {
       errors.push({ 
         code: 'ACCOUNT_INACTIVE', 
@@ -159,7 +131,6 @@ export class TransactionService {
       });
     }
 
-    // Amount validation
     if (amount <= 0) {
       errors.push({ 
         code: 'INVALID_AMOUNT', 
@@ -168,7 +139,6 @@ export class TransactionService {
       });
     }
 
-    // Date validation - cannot be before account opening date
     const txnDate = new Date(date);
     const openingDate = new Date(account.openingDate);
     txnDate.setHours(0, 0, 0, 0);
@@ -182,7 +152,6 @@ export class TransactionService {
       });
     }
 
-    // Category-type validation
     if (type === 'credit' && BUSINESS_RULES.DEBIT_ONLY_CATEGORIES.includes(category)) {
       errors.push({ 
         code: 'INVALID_CATEGORY', 
@@ -214,7 +183,6 @@ export class TransactionService {
       }
     }
 
-    // Max transactions per day validation
     if (isToday && this.todayTransactionCount() >= BUSINESS_RULES.MAX_TRANSACTIONS_PER_DAY) {
       errors.push({ 
         code: 'MAX_TRANSACTIONS_EXCEEDED', 
@@ -225,9 +193,6 @@ export class TransactionService {
     return errors;
   }
 
-  /**
-   * Create a new transaction
-   */
   createTransaction(
     type: TransactionType,
     category: TransactionCategory,
@@ -236,8 +201,6 @@ export class TransactionService {
     date: string
   ): { success: boolean; transaction?: Transaction; errors?: TransactionValidationError[] } {
     const account = this.customerState.selectedAccount();
-    
-    // Validate
     const errors = this.validateTransaction(amount, type, category, date, account);
     if (errors.length > 0) {
       return { success: false, errors };
@@ -248,7 +211,6 @@ export class TransactionService {
     const isScheduled = date > today;
     const status: TransactionStatus = isScheduled ? 'scheduled' : 'completed';
 
-    // Create transaction
     const transaction: Transaction = {
       id: this.generateId(),
       accountId: account!.id,
@@ -272,7 +234,6 @@ export class TransactionService {
       this._canUndo.set(true);
     }
 
-    // Clear draft
     this.clearDraft();
 
     this.logger.info('Transaction created', { 
@@ -294,10 +255,7 @@ export class TransactionService {
       return false;
     }
 
-    // Remove transaction
     this.dataLoader.removeTransaction(lastTxn.id);
-
-    // Clear undo state
     this._lastTransaction.set(null);
     this._canUndo.set(false);
 
@@ -305,9 +263,6 @@ export class TransactionService {
     return true;
   }
 
-  /**
-   * Process scheduled transactions (move to completed if date is today or past)
-   */
   processScheduledTransactions(): number {
     const today = new Date().toISOString().split('T')[0];
     let processed = 0;
@@ -327,9 +282,6 @@ export class TransactionService {
     return processed;
   }
 
-  /**
-   * Save transaction as draft
-   */
   saveDraft(draft: DraftTransaction): void {
     const draftWithTimestamp: DraftTransaction = {
       ...draft,
@@ -347,9 +299,6 @@ export class TransactionService {
     return this.storage.getLocal<DraftTransaction>(DRAFT_KEY);
   }
 
-  /**
-   * Clear draft
-   */
   clearDraft(): void {
     this.storage.removeLocal(DRAFT_KEY);
     this._hasDraft.set(false);
@@ -364,9 +313,6 @@ export class TransactionService {
     this._hasDraft.set(!!draft);
   }
 
-  /**
-   * Clear undo state (e.g., when navigating away)
-   */
   clearUndoState(): void {
     this._lastTransaction.set(null);
     this._canUndo.set(false);

@@ -118,6 +118,16 @@
   height: 1.25rem;
 }
 
+.form-error-list {
+  list-style: none;
+  margin: 0.375rem 0 0 0;
+  padding: 0;
+}
+
+.form-error-list .form-error {
+  margin-top: 0.25rem;
+}
+
 .form-error {
   margin-top: 0.375rem;
   font-size: 0.875rem;

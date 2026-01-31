@@ -1,6 +1,6 @@
-# Digital Banking Front-End Application
+# Digital Banking Front-End
 
-A comprehensive Angular 21 banking front-end application that simulates a customer-centric banking view for bank tellers and relationship managers.
+Angular 21 front-end for a customer-centric banking view used by tellers and relationship managers.
 
 ## Table of Contents
 
@@ -11,19 +11,17 @@ A comprehensive Angular 21 banking front-end application that simulates a custom
 - [Layer Implementation](#layer-implementation)
 - [Business Rules](#business-rules)
 - [Design Patterns](#design-patterns)
-- [Performance Optimizations](#performance-optimizations)
+- [Performance](#performance-optimizations)
 - [Accessibility](#accessibility)
 - [Demo Credentials](#demo-credentials)
 
 ## Overview
 
-This application demonstrates a digital banking front-end system with:
-
-- **Customer Management**: Select and manage customer contexts
-- **Account Management**: View accounts with different statuses (active, frozen, inactive)
-- **Transaction Engine**: Create, validate, and manage transactions with business rules
-- **Analytics Dashboard**: Spending trends, averages, and abnormal spending detection
-- **Multi-Currency Support**: Handle accounts in EGP, USD, EUR, GBP, SAR
+- Customer context selection and management
+- Account list with statuses: active, frozen, inactive
+- Transaction creation and validation with configurable rules
+- Analytics: spending trends, averages, abnormal spending
+- Multi-currency accounts (EGP, USD, EUR, GBP, SAR)
 
 ## Getting Started
 
@@ -134,7 +132,6 @@ readonly selectedCustomer = computed(() => {
 - Standalone components (no NgModules)
 - Lazy-loaded routes for all features
 - Path aliases (@core, @features, @shared)
-- OnPush change detection everywhere
 
 ### Layer 1: Authentication & Security
 - **Fake JWT**: Client-side token generation with base64 encoding

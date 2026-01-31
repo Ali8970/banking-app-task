@@ -1,5 +1,4 @@
 <div class="page-container">
-  <!-- Header -->
   <div class="page-header">
     <button type="button" class="back-link" (click)="goBack()">
       <svg class="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -18,15 +17,14 @@
   }
 
   <app-card>
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <!-- Transaction Type -->
+    <form (submit)="onSubmit($event)">
       <div class="form-section">
         <label class="form-label">Transaction Type</label>
         <div class="type-grid">
           <button
             type="button"
             class="type-btn"
-            [class.type-btn-active-credit]="form.get('type')?.value === 'credit'"
+            [class.type-btn-active-credit]="transactionForm.type().value() === 'credit'"
             (click)="setType('credit')"
           >
             <div class="type-btn-inner">
@@ -44,7 +42,7 @@
           <button
             type="button"
             class="type-btn"
-            [class.type-btn-active-debit]="form.get('type')?.value === 'debit'"
+            [class.type-btn-active-debit]="transactionForm.type().value() === 'debit'"
             [disabled]="customerState.selectedAccount()?.status === 'frozen'"
             (click)="setType('debit')"
           >
@@ -63,53 +61,65 @@
         </div>
       </div>
 
-      <!-- Amount -->
       <div class="form-field">
         <label for="amount" class="form-label">Amount</label>
         <div class="input-with-prefix">
           <span class="input-prefix">{{ currencySymbol() }}</span>
-          <input id="amount" type="number" formControlName="amount" class="form-input" placeholder="0.00" min="0" step="0.01" />
+          <input id="amount" type="number" step="any" [formField]="transactionForm.amount" class="form-input" placeholder="0.00" />
         </div>
-        @if (form.get('type')?.value === 'debit') {
+        @if (transactionForm.type().value() === 'debit') {
           <p class="form-hint">Daily limit remaining: {{ transactionService.remainingDailyLimit() | currencyFormat:customerState.selectedAccount()?.currency }}</p>
         }
-        @if (form.get('amount')?.touched && form.get('amount')?.errors) {
-          <p class="form-error">{{ getFieldError('amount') }}</p>
+        @if (transactionForm.amount().touched() && transactionForm.amount().invalid()) {
+          <ul class="form-error-list">
+            @for (error of transactionForm.amount().errors(); track error.kind) {
+              <li class="form-error">{{ error.message }}</li>
+            }
+          </ul>
         }
       </div>
 
-      <!-- Category -->
       <div class="form-field">
         <label for="category" class="form-label">Category</label>
-        <select id="category" formControlName="category" class="form-select">
+        <select id="category" [formField]="transactionForm.category" class="form-select">
           <option value="">Select a category</option>
           @for (cat of availableCategories(); track cat) {
             <option [value]="cat">{{ cat | titlecase }}</option>
           }
         </select>
-        @if (form.get('category')?.touched && form.get('category')?.errors) {
-          <p class="form-error">{{ getFieldError('category') }}</p>
+        @if (transactionForm.category().touched() && transactionForm.category().invalid()) {
+          <ul class="form-error-list">
+            @for (error of transactionForm.category().errors(); track error.kind) {
+              <li class="form-error">{{ error.message }}</li>
+            }
+          </ul>
         }
       </div>
 
-      <!-- Date -->
       <div class="form-field">
         <label for="date" class="form-label">Date</label>
-        <input id="date" type="date" formControlName="date" class="form-input" [min]="minDate" />
+        <input id="date" type="date" [formField]="transactionForm.date" class="form-input" />
         @if (isScheduled()) {
-          <p class="form-hint form-hint-warning">This transaction will be scheduled for {{ form.get('date')?.value }}</p>
+          <p class="form-hint form-hint-warning">This transaction will be scheduled for {{ transactionForm.date().value() }}</p>
         }
-        @if (form.get('date')?.touched && form.get('date')?.errors) {
-          <p class="form-error">{{ getFieldError('date') }}</p>
+        @if (transactionForm.date().touched() && transactionForm.date().invalid()) {
+          <ul class="form-error-list">
+            @for (error of transactionForm.date().errors(); track error.kind) {
+              <li class="form-error">{{ error.message }}</li>
+            }
+          </ul>
         }
       </div>
 
-      <!-- Description -->
       <div class="form-field">
         <label for="description" class="form-label">Description</label>
-        <textarea id="description" formControlName="description" rows="3" class="form-textarea" placeholder="Enter transaction description..."></textarea>
-        @if (form.get('description')?.touched && form.get('description')?.errors) {
-          <p class="form-error">{{ getFieldError('description') }}</p>
+        <textarea id="description" [formField]="transactionForm.description" rows="3" class="form-textarea" placeholder="Enter transaction description..."></textarea>
+        @if (transactionForm.description().touched() && transactionForm.description().invalid()) {
+          <ul class="form-error-list">
+            @for (error of transactionForm.description().errors(); track error.kind) {
+              <li class="form-error">{{ error.message }}</li>
+            }
+          </ul>
         }
       </div>
 
@@ -125,7 +135,7 @@
       }
 
       <div class="form-actions">
-        <app-button type="submit" [loading]="isSubmitting()" [disabled]="form.invalid">
+        <app-button type="submit" [loading]="isSubmitting()" [disabled]="transactionForm().invalid()">
           {{ isScheduled() ? 'Schedule Transaction' : 'Create Transaction' }}
         </app-button>
         <app-button type="button" variant="outline" (clicked)="saveDraft()">Save Draft</app-button>

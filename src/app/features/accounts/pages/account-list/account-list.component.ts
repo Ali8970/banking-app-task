@@ -4,9 +4,6 @@ import { CustomerStateService, DataLoaderService, Account, AccountStatus, CURREN
 import { CardComponent, EmptyStateComponent, SkeletonComponent, BadgeComponent, ButtonComponent } from '@shared/index';
 import { CurrencyFormatPipe } from '@shared/pipes';
 
-/**
- * Account List Component - Display accounts for selected customer
- */
 @Component({
   selector: 'app-account-list',
   imports: [CardComponent, EmptyStateComponent, SkeletonComponent, BadgeComponent, ButtonComponent, CurrencyFormatPipe],

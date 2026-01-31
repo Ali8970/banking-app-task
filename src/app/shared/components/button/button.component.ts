@@ -3,10 +3,6 @@ import { Component, input, output } from '@angular/core';
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
-/**
- * Button Component - Reusable button with variants
- * Follows WCAG AA accessibility standards
- */
 @Component({
   selector: 'app-button',
   templateUrl: './button.component.html',

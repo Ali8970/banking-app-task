@@ -6,14 +6,6 @@ import { Customer, Account } from '../models';
 
 const SELECTED_CUSTOMER_KEY = 'selected_customer_id';
 
-/**
- * Customer State Service - Manages selected customer context
- * 
- * Features:
- * - Selected customer persists across refresh (sessionStorage)
- * - Switching customer resets account selection
- * - Derived accounts for selected customer
- */
 @Injectable({
   providedIn: 'root'
 })
@@ -22,11 +14,9 @@ export class CustomerStateService {
   private readonly logger = inject(LoggerService);
   private readonly dataLoader = inject(DataLoaderService);
 
-  // State
   private readonly _selectedCustomerId = signal<string | null>(null);
   private readonly _selectedAccountId = signal<string | null>(null);
 
-  // Computed: Selected customer object
   readonly selectedCustomer = computed(() => {
     const id = this._selectedCustomerId();
     if (!id) return null;
@@ -40,7 +30,6 @@ export class CustomerStateService {
     return this.dataLoader.accounts().filter(a => a.customerId === customerId);
   });
 
-  // Computed: Selected account object
   readonly selectedAccount = computed(() => {
     const id = this._selectedAccountId();
     if (!id) return null;
@@ -57,9 +46,6 @@ export class CustomerStateService {
     this.restoreState();
   }
 
-  /**
-   * Restore selected customer from session storage
-   */
   private restoreState(): void {
     const storedId = this.storage.getSession<string>(SELECTED_CUSTOMER_KEY);
     if (storedId) {
@@ -68,9 +54,6 @@ export class CustomerStateService {
     }
   }
 
-  /**
-   * Select a customer
-   */
   selectCustomer(customerId: string | null): void {
     const previousId = this._selectedCustomerId();
     
@@ -106,9 +89,6 @@ export class CustomerStateService {
     }
   }
 
-  /**
-   * Clear all selections
-   */
   clearSelection(): void {
     this._selectedCustomerId.set(null);
     this._selectedAccountId.set(null);
@@ -123,9 +103,6 @@ export class CustomerStateService {
     return this.dataLoader.customers();
   }
 
-  /**
-   * Get account by ID
-   */
   getAccountById(accountId: string): Account | undefined {
     return this.dataLoader.accounts().find(a => a.id === accountId);
   }

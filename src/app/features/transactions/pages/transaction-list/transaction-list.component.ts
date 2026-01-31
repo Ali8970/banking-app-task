@@ -19,9 +19,6 @@ import { CurrencyFormatPipe, RelativeDatePipe } from '@shared/pipes';
 
 type TabType = 'all' | 'completed' | 'scheduled';
 
-/**
- * Transaction List Component - Virtual scrolling transaction list
- */
 @Component({
   selector: 'app-transaction-list',
   imports: [
